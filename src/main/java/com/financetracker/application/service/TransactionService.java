@@ -1,6 +1,7 @@
 package com.financetracker.application.service;
 
 import com.financetracker.domain.exception.ResourceNotFoundException;
+import com.financetracker.domain.model.FinancialSummary;
 import com.financetracker.domain.model.Money;
 import com.financetracker.domain.model.PageResult;
 import com.financetracker.domain.model.Transaction;
@@ -74,5 +75,28 @@ public class TransactionService {
         if (!categoryRepository.existsById(categoryId)) {
             throw new ResourceNotFoundException("Category", "id", categoryId);
         }
+    }
+
+    public FinancialSummary getFinancialSummary(Long userId, LocalDate startDate, LocalDate endDate) {
+        if (startDate == null) {
+            startDate = LocalDate.now().withDayOfMonth(1);
+        }
+        if (endDate == null) {
+            endDate = LocalDate.now();
+        }
+
+        BigDecimal totalIncome = transactionRepository
+                .sumAmountByUserIdAndTypeAndDateRange(userId, TransactionType.INCOME, startDate, endDate);
+        BigDecimal totalExpenses = transactionRepository
+                .sumAmountByUserIdAndTypeAndDateRange(userId, TransactionType.EXPENSE, startDate, endDate);
+        long count = transactionRepository.countByUserIdAndDateRange(userId, startDate, endDate);
+
+        var expenseCategories = transactionRepository
+                .findCategorySummaries(userId, TransactionType.EXPENSE, startDate, endDate);
+        var incomeCategories = transactionRepository
+                .findCategorySummaries(userId, TransactionType.INCOME, startDate, endDate);
+
+        return new FinancialSummary(startDate, endDate, totalIncome, totalExpenses,
+                null, count, expenseCategories, incomeCategories);
     }
 }
