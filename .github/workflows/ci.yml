@@ -40,6 +40,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Grant execute permission to Maven wrapper
+        run: chmod +x mvnw
+
       - name: Build and run tests
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/finance_tracker_test
