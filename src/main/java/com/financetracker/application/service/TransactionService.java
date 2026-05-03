@@ -2,6 +2,7 @@ package com.financetracker.application.service;
 
 import com.financetracker.domain.exception.ResourceNotFoundException;
 import com.financetracker.domain.model.Money;
+import com.financetracker.domain.model.PageResult;
 import com.financetracker.domain.model.Transaction;
 import com.financetracker.domain.model.TransactionType;
 import com.financetracker.domain.port.out.CategoryRepository;
@@ -43,6 +44,14 @@ public class TransactionService {
                                               LocalDate endDate) {
         return transactionRepository.findByUserIdAndFilters(
                 userId, type, categoryId, startDate, endDate);
+    }
+
+    public PageResult<Transaction> getTransactionsPaginated(Long userId, TransactionType type,
+                                                              Long categoryId, LocalDate startDate,
+                                                              LocalDate endDate, int page, int size,
+                                                              String sortBy, String sortDirection) {
+        return transactionRepository.findByUserIdAndFilters(
+                userId, type, categoryId, startDate, endDate, page, size, sortBy, sortDirection);
     }
 
     public Transaction updateTransaction(Long id, Long userId, BigDecimal amount,

@@ -1,5 +1,6 @@
 package com.financetracker.domain.port.out;
 
+import com.financetracker.domain.model.PageResult;
 import com.financetracker.domain.model.Transaction;
 import com.financetracker.domain.model.TransactionType;
 
@@ -21,6 +22,11 @@ public interface TransactionRepository {
     List<Transaction> findByUserIdAndFilters(Long userId, TransactionType type,
                                               Long categoryId, LocalDate startDate,
                                               LocalDate endDate);
+
+    PageResult<Transaction> findByUserIdAndFilters(Long userId, TransactionType type,
+                                                    Long categoryId, LocalDate startDate,
+                                                    LocalDate endDate, int page, int size,
+                                                    String sortBy, String sortDirection);
 
     void deleteByIdAndUserId(Long id, Long userId);
 
