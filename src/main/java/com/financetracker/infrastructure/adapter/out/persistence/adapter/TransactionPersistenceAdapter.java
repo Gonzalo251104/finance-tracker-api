@@ -1,5 +1,6 @@
 package com.financetracker.infrastructure.adapter.out.persistence.adapter;
 
+import com.financetracker.domain.model.CategorySummary;
 import com.financetracker.domain.model.PageResult;
 import com.financetracker.domain.model.Transaction;
 import com.financetracker.domain.model.TransactionType;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -80,5 +82,36 @@ public class TransactionPersistenceAdapter implements TransactionRepository {
     @Override
     public boolean existsByIdAndUserId(Long id, Long userId) {
         return jpaRepository.existsByIdAndUserId(id, userId);
+    }
+
+    @Override
+    public BigDecimal sumAmountByUserIdAndTypeAndDateRange(Long userId, TransactionType type,
+                                                            LocalDate startDate, LocalDate endDate) {
+        return jpaRepository.sumAmountByUserIdAndType(userId, type, startDate, endDate);
+    }
+
+    @Override
+    public long countByUserIdAndDateRange(Long userId, LocalDate startDate, LocalDate endDate) {
+        return jpaRepository.countByUserIdAndDateRange(userId, startDate, endDate);
+    }
+
+    @Override
+    public List<CategorySummary> findCategorySummaries(Long userId, TransactionType type,
+                                                        LocalDate startDate, LocalDate endDate) {
+        List<Object[]> raw = jpaRepository.findCategorySummaryRaw(userId, type, startDate, endDate);
+        BigDecimal total = raw.stream()
+                .map(r -> (BigDecimal) r[4])
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return raw.stream().map(r -> {
+            BigDecimal amount = (BigDecimal) r[4];
+            BigDecimal pct = total.compareTo(BigDecimal.ZERO) > 0
+                    ? amount.multiply(BigDecimal.valueOf(100))
+                            .divide(total, 2, java.math.RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+            return new CategorySummary(
+                    (Long) r[0], (String) r[1], (String) r[2], (String) r[3],
+                    type, amount, (Long) r[5], pct);
+        }).toList();
     }
 }

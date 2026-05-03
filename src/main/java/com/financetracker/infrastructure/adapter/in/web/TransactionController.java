@@ -1,6 +1,7 @@
 package com.financetracker.infrastructure.adapter.in.web;
 
 import com.financetracker.application.service.TransactionService;
+import com.financetracker.domain.model.FinancialSummary;
 import com.financetracker.domain.model.Transaction;
 import com.financetracker.domain.model.TransactionType;
 import com.financetracker.infrastructure.adapter.in.web.dto.request.TransactionRequest;
@@ -17,7 +18,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * REST controller for transaction operations.
@@ -93,5 +93,16 @@ public class TransactionController {
             @PathVariable Long id) {
         transactionService.deleteTransaction(id, user.userId());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/summary")
+    @Operation(summary = "Get financial summary with totals and category breakdowns")
+    public ResponseEntity<FinancialSummary> getFinancialSummary(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        var summary = transactionService.getFinancialSummary(
+                user.userId(), startDate, endDate);
+        return ResponseEntity.ok(summary);
     }
 }

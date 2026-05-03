@@ -1,9 +1,11 @@
 package com.financetracker.domain.port.out;
 
+import com.financetracker.domain.model.CategorySummary;
 import com.financetracker.domain.model.PageResult;
 import com.financetracker.domain.model.Transaction;
 import com.financetracker.domain.model.TransactionType;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -31,4 +33,12 @@ public interface TransactionRepository {
     void deleteByIdAndUserId(Long id, Long userId);
 
     boolean existsByIdAndUserId(Long id, Long userId);
+
+    BigDecimal sumAmountByUserIdAndTypeAndDateRange(Long userId, TransactionType type,
+                                                     LocalDate startDate, LocalDate endDate);
+
+    long countByUserIdAndDateRange(Long userId, LocalDate startDate, LocalDate endDate);
+
+    List<CategorySummary> findCategorySummaries(Long userId, TransactionType type,
+                                                 LocalDate startDate, LocalDate endDate);
 }
