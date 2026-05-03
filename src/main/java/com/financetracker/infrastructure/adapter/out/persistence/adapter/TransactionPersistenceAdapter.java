@@ -1,10 +1,13 @@
 package com.financetracker.infrastructure.adapter.out.persistence.adapter;
 
+import com.financetracker.domain.model.PageResult;
 import com.financetracker.domain.model.Transaction;
 import com.financetracker.domain.model.TransactionType;
 import com.financetracker.domain.port.out.TransactionRepository;
 import com.financetracker.infrastructure.adapter.out.persistence.mapper.TransactionMapper;
 import com.financetracker.infrastructure.adapter.out.persistence.repository.TransactionJpaRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +54,21 @@ public class TransactionPersistenceAdapter implements TransactionRepository {
                                                      LocalDate endDate) {
         return jpaRepository.findByFilters(userId, type, categoryId, startDate, endDate)
                 .stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public PageResult<Transaction> findByUserIdAndFilters(Long userId, TransactionType type,
+                                                           Long categoryId, LocalDate startDate,
+                                                           LocalDate endDate, int page, int size,
+                                                           String sortBy, String sortDirection) {
+        Sort sort = Sort.by(
+                "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC,
+                sortBy != null ? sortBy : "date");
+        var pageable = PageRequest.of(page, size, sort);
+        var jpaPage = jpaRepository.findByFilters(userId, type, categoryId, startDate, endDate, pageable);
+        var transactions = jpaPage.getContent().stream().map(mapper::toDomain).toList();
+        return new PageResult<>(transactions, jpaPage.getNumber(), jpaPage.getSize(),
+                jpaPage.getTotalElements());
     }
 
     @Override
