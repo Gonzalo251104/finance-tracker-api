@@ -1,0 +1,41 @@
+# Build artifacts
+target/
+!target/*.jar
+
+# Maven wrapper JAR (downloaded at build time)
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+compose.yaml
+docker-data/
+Dockerfile
+
+# Environment
+.env
+.env.*
+
+# Documentation
+*.md
+LICENSE
+
+# CI/CD
+.github/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor config
+.editorconfig
