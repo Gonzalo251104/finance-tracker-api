@@ -2,6 +2,8 @@ package com.financetracker.infrastructure.adapter.out.persistence.repository;
 
 import com.financetracker.domain.model.TransactionType;
 import com.financetracker.infrastructure.adapter.out.persistence.entity.TransactionJpaEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,6 +36,22 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionJpaEn
             @Param("categoryId") Long categoryId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    @Query("""
+            SELECT t FROM TransactionJpaEntity t
+            WHERE t.userId = :userId
+            AND (:type IS NULL OR t.type = :type)
+            AND (:categoryId IS NULL OR t.categoryId = :categoryId)
+            AND (:startDate IS NULL OR t.date >= :startDate)
+            AND (:endDate IS NULL OR t.date <= :endDate)
+            """)
+    Page<TransactionJpaEntity> findByFilters(
+            @Param("userId") Long userId,
+            @Param("type") TransactionType type,
+            @Param("categoryId") Long categoryId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable);
 
     void deleteByIdAndUserId(Long id, Long userId);
 

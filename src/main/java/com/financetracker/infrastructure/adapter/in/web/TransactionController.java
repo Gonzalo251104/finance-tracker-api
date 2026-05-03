@@ -4,6 +4,7 @@ import com.financetracker.application.service.TransactionService;
 import com.financetracker.domain.model.Transaction;
 import com.financetracker.domain.model.TransactionType;
 import com.financetracker.infrastructure.adapter.in.web.dto.request.TransactionRequest;
+import com.financetracker.infrastructure.adapter.in.web.dto.response.PageResponse;
 import com.financetracker.infrastructure.adapter.in.web.dto.response.TransactionResponse;
 import com.financetracker.infrastructure.security.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,18 +57,21 @@ public class TransactionController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all transactions with optional filters")
-    public ResponseEntity<List<TransactionResponse>> getTransactions(
+    @Operation(summary = "Get all transactions with pagination, sorting, and optional filters")
+    public ResponseEntity<PageResponse<TransactionResponse>> getTransactions(
             @AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(required = false) TransactionType type,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate) {
-        List<Transaction> transactions = transactionService.getTransactions(
-                user.userId(), type, categoryId, startDate, endDate);
-        List<TransactionResponse> response = transactions.stream()
-                .map(TransactionResponse::from).toList();
-        return ResponseEntity.ok(response);
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        var result = transactionService.getTransactionsPaginated(
+                user.userId(), type, categoryId, startDate, endDate,
+                page, size, sortBy, sortDir);
+        return ResponseEntity.ok(PageResponse.from(result, TransactionResponse::from));
     }
 
     @PutMapping("/{id}")
