@@ -56,4 +56,41 @@ public interface TransactionJpaRepository extends JpaRepository<TransactionJpaEn
     void deleteByIdAndUserId(Long id, Long userId);
 
     boolean existsByIdAndUserId(Long id, Long userId);
+
+    @Query("""
+            SELECT COALESCE(SUM(t.amount), 0) FROM TransactionJpaEntity t
+            WHERE t.userId = :userId AND t.type = :type
+            AND t.date >= :startDate AND t.date <= :endDate
+            """)
+    java.math.BigDecimal sumAmountByUserIdAndType(
+            @Param("userId") Long userId,
+            @Param("type") TransactionType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    @Query("""
+            SELECT COUNT(t) FROM TransactionJpaEntity t
+            WHERE t.userId = :userId
+            AND t.date >= :startDate AND t.date <= :endDate
+            """)
+    long countByUserIdAndDateRange(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    @Query("""
+            SELECT t.categoryId, c.name, c.icon, c.color,
+                   SUM(t.amount), COUNT(t)
+            FROM TransactionJpaEntity t
+            JOIN CategoryJpaEntity c ON t.categoryId = c.id
+            WHERE t.userId = :userId AND t.type = :type
+            AND t.date >= :startDate AND t.date <= :endDate
+            GROUP BY t.categoryId, c.name, c.icon, c.color
+            ORDER BY SUM(t.amount) DESC
+            """)
+    List<Object[]> findCategorySummaryRaw(
+            @Param("userId") Long userId,
+            @Param("type") TransactionType type,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }
