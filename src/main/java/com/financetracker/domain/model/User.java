@@ -52,6 +52,13 @@ public class User {
         }
     }
 
+    public void updateProfile(String firstName, String lastName) {
+        validate(firstName, lastName, this.email);
+        this.firstName = firstName.trim();
+        this.lastName = lastName.trim();
+        this.updatedAt = LocalDateTime.now();
+    }
+
     // --- Getters ---
     public Long getId() { return id; }
     public String getFirstName() { return firstName; }
