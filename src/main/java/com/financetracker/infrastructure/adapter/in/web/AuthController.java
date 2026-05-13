@@ -3,6 +3,7 @@ package com.financetracker.infrastructure.adapter.in.web;
 import com.financetracker.application.service.AuthService;
 import com.financetracker.domain.model.User;
 import com.financetracker.infrastructure.adapter.in.web.dto.request.LoginRequest;
+import com.financetracker.infrastructure.adapter.in.web.dto.request.RefreshTokenRequest;
 import com.financetracker.infrastructure.adapter.in.web.dto.request.RegisterRequest;
 import com.financetracker.infrastructure.adapter.in.web.dto.response.AuthResponse;
 import com.financetracker.infrastructure.security.JwtTokenProvider;
@@ -46,6 +47,22 @@ public class AuthController {
     @Operation(summary = "Login with email and password")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         User user = authService.authenticate(request.email(), request.password());
+        return ResponseEntity.ok(buildAuthResponse(user));
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh access token using a valid refresh token")
+    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        String refreshToken = request.refreshToken();
+
+        if (!jwtTokenProvider.validateToken(refreshToken) || !jwtTokenProvider.isRefreshToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = jwtTokenProvider.getEmailFromToken(refreshToken);
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+        User user = authService.findByEmail(email);
+
         return ResponseEntity.ok(buildAuthResponse(user));
     }
 

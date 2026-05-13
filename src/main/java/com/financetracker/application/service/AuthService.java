@@ -42,6 +42,11 @@ public class AuthService {
         return user;
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+    }
+
     /**
      * Functional interface to keep the application layer framework-agnostic.
      * The infrastructure layer provides the implementation (BCrypt).
