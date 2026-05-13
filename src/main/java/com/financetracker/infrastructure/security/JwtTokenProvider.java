@@ -33,14 +33,14 @@ public class JwtTokenProvider {
     }
 
     public String generateAccessToken(Long userId, String email, String role) {
-        return buildToken(userId, email, role, accessTokenExpiration);
+        return buildToken(userId, email, role, "access", accessTokenExpiration);
     }
 
     public String generateRefreshToken(Long userId, String email, String role) {
-        return buildToken(userId, email, role, refreshTokenExpiration);
+        return buildToken(userId, email, role, "refresh", refreshTokenExpiration);
     }
 
-    private String buildToken(Long userId, String email, String role, long expiration) {
+    private String buildToken(Long userId, String email, String role, String tokenType, long expiration) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
@@ -48,10 +48,19 @@ public class JwtTokenProvider {
                 .subject(email)
                 .claim("userId", userId)
                 .claim("role", role)
+                .claim("type", tokenType)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)
                 .compact();
+    }
+
+    public boolean isRefreshToken(String token) {
+        try {
+            return "refresh".equals(getClaims(token).get("type", String.class));
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     public String getEmailFromToken(String token) {
