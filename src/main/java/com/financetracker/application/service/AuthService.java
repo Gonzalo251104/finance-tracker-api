@@ -47,6 +47,17 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
     }
 
+    public User getUserProfile(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+    }
+
+    public User updateUserProfile(Long userId, String firstName, String lastName) {
+        User user = getUserProfile(userId);
+        user.updateProfile(firstName, lastName);
+        return userRepository.save(user);
+    }
+
     /**
      * Functional interface to keep the application layer framework-agnostic.
      * The infrastructure layer provides the implementation (BCrypt).
